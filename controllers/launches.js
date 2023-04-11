@@ -54,11 +54,10 @@ export const deleteLaunch = async (req, res) => {
   }
 };
 
-//GET LAUNCHES BY STATUS
-export const getLaunchesByStatus = async (req, res) => {
+export const getLaunchesByName = async (req, res) => {
   try {
-    const { status } = req.params;
-    const launches = await Launch.find({ status });
+    const { name } = req.params;
+    const launches = await Launch.find({ name: { $regex: name, $options: "i" } });
     res.json(launches);
   } catch (error) {
     console.log(error.message);
@@ -66,11 +65,10 @@ export const getLaunchesByStatus = async (req, res) => {
   }
 };
 
-//GET LAUNCHES BY YEAR
-export const getLaunchesByYear = async (req, res) => {
+export const getLaunchesByLaunchpad = async (req, res) => {
   try {
-    const { year } = req.params;
-    const launches = await Launch.find({ date: { $regex: year } });
+    const { launchpad } = req.params;
+    const launches = await Launch.find({ launchpad: launchpad });
     res.json(launches);
   } catch (error) {
     console.log(error.message);
@@ -78,30 +76,33 @@ export const getLaunchesByYear = async (req, res) => {
   }
 };
 
-//UPDATE LAUNCH STATUS
-export const updateLaunchStatus = async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
+export const getUpcomingLaunches = async (req, res) => {
   try {
-    const launch = await Launch.findByIdAndUpdate(id, { status }, { new: true });
-    res.json(launch);
+    const upcomingLaunches = await Launch.find({ date_utc: { $gte: new Date() } });
+    res.json(upcomingLaunches);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
-//DELETE ALL LAUNCHES
-export const deleteAllLaunches = async (req, res) => {
+export const getFailedLaunches = async (req, res) => {
   try {
-    const deleted = await Launch.deleteMany();
-    if (deleted) {
-      return res.status(200).send("All Launches Deleted");
-    }
-    throw new Error("No Launches found to delete");
+    const failedLaunches = await Launch.find({ success: false });
+    res.json(failedLaunches);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ error: error.message });
   }
 };
 
+export const getLaunchesByFlightNumber = async (req, res) => {
+  try {
+    const { flightNumber } = req.params;
+    const launches = await Launch.find({ flight_number: flightNumber });
+    res.json(launches);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
